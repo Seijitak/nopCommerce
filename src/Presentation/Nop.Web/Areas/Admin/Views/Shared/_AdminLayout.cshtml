@@ -274,6 +274,53 @@
         @Html.NopScripts(ResourceLocation.Footer)
         <a id="backTop" class="btn btn-back-top bg-teal"></a>
         <script>
+            var hideSidebar =  @(genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideSidebarAttributeName).ToString().ToLower());;
+
+            function toggleSidebar() {      
+                var isMobile = $(window).width() <= '750';
+
+                //mobile view
+                if (isMobile) {
+                    //bar is close 
+                    if (hideSidebar) {
+                        if ($('body').hasClass('sidebar-collapse')) {
+                            $('body').removeClass('sidebar-collapse');
+                        }
+                        if ($('body').hasClass('sidebar-open')) {
+                            $('body').removeClass('sidebar-open');
+                        }
+                    } //bar is open
+                    else {
+                        $('body').addClass('sidebar-open');
+                        if ($('body').hasClass('sidebar-collapse')) {
+                            $('body').removeClass('sidebar-collapse');
+                        }
+                    }
+                }//decktop view
+                else {
+                    //bar is close 
+                    if (hideSidebar) {
+                        $('body').addClass('sidebar-collapse');
+                        if ($('body').hasClass('sidebar-open')) {
+                            $('body').removeClass('sidebar-open');
+                        }
+                        
+                    }//bar is open
+                    else {
+                        if ($('body').hasClass('sidebar-open')) {
+                            $('body').removeClass('sidebar-open');
+                        }
+                        if ($('body').hasClass('sidebar-collapse')) {
+                            $('body').removeClass('sidebar-collapse');
+                        }
+                    }
+                }
+            };
+
+            $(window).on("orientationchange resize", function () {
+                toggleSidebar();
+            });
+
             $(document).ready(function () {
                 //enable "back top" arrow
                 $('#backTop').backTop();
@@ -281,26 +328,13 @@
                 //enable tooltips
                 $('[data-toggle="tooltip"]').tooltip();
 
-                var hideSidebar =  @(genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideSidebarAttributeName).ToString().ToLower());
-                var isMobile = $(window).width() <= '750';
-
-                if (isMobile && hideSidebar) {
-                    $('body').addClass('sidebar-open');
-                    if ($('body').hasClass('sidebar-collapse')) {
-                        $('body').removeClass('sidebar-collapse');
-                    }
-                }
-                if (!isMobile && hideSidebar) {
-                    $('body').addClass('sidebar-collapse');
-                    if ($('body').hasClass('sidebar-open')) {
-                        $('body').removeClass('sidebar-open');
-                    }
-                }
+                toggleSidebar();                
 
                 //save sidebar preferences
                 $('a.sidebar-toggle').on('click', function () {
-                    if ($(window).width() <= '750') {
-                        var collapsed = !$('body').hasClass('sidebar-open');
+                    var isMobile = $(window).width() <= '750';
+                    if (isMobile) {
+                        var collapsed = $('body').hasClass('sidebar-open');
                         saveUserPreferences('@(Url.Action("SavePreference", "Preferences"))', '@hideSidebarAttributeName', collapsed);
                     } else {
                         var collapsed = !$('body').hasClass('sidebar-collapse');
